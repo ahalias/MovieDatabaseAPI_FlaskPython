@@ -1,0 +1,47 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>As time flies, your database will grow. At some point, retrieving all the data may become problematic: the response will be too large, which will make it harder for the end client to process it, and gathering all the rows from the database will require time. This is where you should think about allowing your API to filter data your clients want to retrieve. Filtering is one of the popular <code class="language-bash">REST</code> concepts that makes your API is easier to use by clients. In simple cases, filtering is usually implemented with query parameters. </p>
+<h5 id="objectives">Objectives</h5>
+<p>Add the ability to filter <code class="language-bash">Humans</code> by role and <code class="language-bash">Movies</code> by genre to the corresponding <code class="language-bash">GET /humans</code> and <code class="language-bash">GET /movies</code> endpoints using query parameters. When receiving the query parameter, the <code class="language-bash">GET</code> endpoint should return only people or movies that stored in the database.</p>
+<p>Read more on using query parameters for filtering and other clues in the <a href="https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/" rel="noopener noreferrer nofollow" target="_blank">REST API Design: Filtering, Sorting, and Pagination</a> article by Moesif.</p>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1: </strong><em>returning multiple individuals with different roles</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/humans</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-python">{"humans":
+     [{"id": 1,
+       "name": "Terry Gilliam"}, # assuming he has following roles: ["actor", "director"]
+      {"id": 2,
+       "name": "Graham Chapman"}, # ["actor", "writer"]
+      {"id": 3,
+       "name": "John Cleese"}] # ["actor", "writer"] stored in the database</code></pre>
+<p><strong>Example 2: </strong><em>getting people with a writer role</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/humans?role=writer
+</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-python">{"humans":
+    [{"id": 2,
+      "name": "Graham Chapman"},
+     {"id": 3,
+      "name": "John Cleese"}]</code></pre>
+<p><strong>Example 3: </strong><em>returning multiple movies of different genres</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/movies</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-bash">{"movies": [
+     {"id": 1,
+      "name": "Monthy Python's Flying Circus",
+      "genre": "comedy"},
+     {"id": 2,
+      "name": "Hypermovie",
+      "sci-fi"}
+]}</code></pre>
+<p><strong>Example 4: </strong><em>getting movies with a comedy genre</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/movies?genre=comedy</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-bash">{"movies": [
+     {"id": 1,
+      "name": "Monthy Python's Flying Circus",
+      "genre": "comedy"}
+]}</code></pre>
+
+</div>

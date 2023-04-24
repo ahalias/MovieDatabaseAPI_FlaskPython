@@ -1,0 +1,37 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>At this point, your application can create, store and return movies via the API. Now, it's time to create the rest of the tables. In the previous stage, you've figured out all the instances you need to create in order for the application to work properly. And you have probably decided that besides the <code class="language-django">Movie</code> table, the application will need to store people who participate in these movies (whether as an actor, a director, or a producer). To achieve this, we will need two new tables. One of them is for storing people who participate in movies, let's call it <code class="language-django">Human</code>, and one is for storing the relations between individuals and movies, named <code class="language-django">HumanInMovie</code>.</p>
+<h5 id="objectives">Objectives</h5>
+<p>Using SQLAlchemy, create the <code class="language-django">Human</code> and the <code class="language-django">HumanInMovie</code> tables.</p>
+<p>Make sure <code class="language-django">Human</code> has the following required fields: <code class="language-django">id</code>, <code class="language-django">name</code>, and <code class="language-django">year_born</code>. For the <code class="language-django">HumanInMovie</code>, the required fields are <code class="language-django">id</code>, <code class="language-django">role</code>, <code class="language-django">movie_id</code>, and <code class="language-django">human_id</code>, with the last two needed to create relationships with <code class="language-django">Movie</code> and <code class="language-django">Human</code> tables.</p>
+<p>Moreover, create new <code class="language-django">GET</code> and <code class="language-django">POST</code> endpoints for people at <em>/humans</em> and <em>/humans/&lt;id&gt;</em>. Just like with the movies.</p>
+<ul>
+<li>The <code class="language-django">POST /humans</code> endpoint should accept incoming requests with a JSON body containing at least<em> </em>the required fields and create a new <code class="language-django">People</code> database entry. </li>
+<li>A <code class="language-django">GET /humans</code> endpoint would be expected to return a list of all the people in the database, stored under the <span style="color: #000000;">humans</span> key, containing only the <code class="language-django">id</code>s and <code class="language-django">name</code>s;</li>
+<li>The <code class="language-django">GET /humans/&lt;id&gt;</code> should return detailed information about a person, i.e., the rest of the fields, accessible by the <code class="language-django">human</code> key.</li>
+</ul>
+<p>For now, it's this simple. We also won't use the <code class="language-django">HumanInMovie</code> table at this stage, but to prepare for the next step, it's now worth adding a few individuals and movies to your database using freshly created API endpoints.</p>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1: </strong><em>creating a new person</em></p>
+<pre><code class="language-no-highlight">http POST http://127.0.0.1:8000/humans
+</code></pre>
+<p>example payload:</p>
+<pre><code class="language-no-highlight">{"name": "Graham Chapman",
+"year_born": "1941"}</code></pre>
+<p><strong>Example 2: </strong><em>getting the list of people</em></p>
+<pre><code class="language-no-highlight">http GET http://127.0.0.1:8000/humans</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-django">{"humans": [
+     {"id": 1,
+      "name": "Graham Chapman"}
+]}</code></pre>
+<p><strong>Example 3: </strong><em>getting detailed information about a person</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/humans/1</code></pre>
+<p>example response:</p>
+<pre><code class="language-no-highlight">{"human":
+     {"id": 1,
+      "name": "Graham Chapman",
+      "year_born": "1941"}
+}</code></pre>
+
+</div>

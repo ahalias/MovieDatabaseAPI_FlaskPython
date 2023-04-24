@@ -1,0 +1,12 @@
+type: hyperskill
+title: Movie Database API
+language: English
+summary: <p>Storing data is what you'll have to deal with a lot as a backend developer.
+  It's critical to save and store information in the most efficient and convenient
+  way because almost every application has some information that needs to be saved.
+  A movie database is a good example to get to know how to implement data models and
+  relations between them in a database schema.</p><br/><br/>Learn more at <a href="https://hyperskill.org/projects/325?utm_source=ide&utm_medium=ide&utm_campaign=ide&utm_content=project-card">https://hyperskill.org/projects/325</a>
+programming_language: Python
+content:
+- Movie Database API
+mode: Study

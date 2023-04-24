@@ -1,0 +1,286 @@
+type: edu
+files:
+- name: test/__init__.py
+  visible: false
+  learner_created: false
+- name: test/tests.py
+  visible: false
+  text: |
+    import requests
+    from hstest import FlaskTest, wrong, correct, dynamic_test
+
+
+    class MovieDatabaseAPIError(Exception):
+        def __init__(self, error_resp):
+            self.msg = error_resp["error"]
+
+        def __str__(self):
+            return f"{self.msg}"
+
+
+    class Test(FlaskTest):
+        source = "api.main"
+        use_database = True
+
+        @property
+        def movies_url(self):
+            return self.get_url("/movies")
+
+        @property
+        def humans_url(self):
+            return self.get_url("/humans")
+
+        @property
+        def example_movies(self):
+            return [
+                {"name": "Biba",
+                 "year": "1999",
+                 "genre": "comedy"},
+                {"name": "Boba",
+                 "year": "2099",
+                 "genre": "horror"}
+            ]
+
+        @property
+        def example_humans(self):
+            return [
+                {"name": "Pupa",
+                 "year_born": 2012},
+                {"name": "Graham Chapman",
+                 "year_born": 1941}
+            ]
+
+        @dynamic_test
+        def check_stage_one_endpoints(self):
+            try:
+                example_movies = self.example_movies.copy()
+                for example_movie in example_movies:
+                    create_movie_resp = requests.post(self.movies_url, json=example_movie)
+                    create_movie_resp.raise_for_status()
+                    movie_id = create_movie_resp.json().get("id")
+                    if not movie_id:
+                        return wrong("Expected to get movie id in the creation response!")
+                    example_movie["id"] = movie_id
+
+                    get_movie_details_resp = requests.get(f"{self.movies_url}/{movie_id}")
+                    get_movie_details_resp.raise_for_status()
+                    movie_info = get_movie_details_resp.json().get("movie")
+                    if not movie_info:
+                        return wrong("Detailed movie endpoint should return movie info in json accessible by 'movie' key!")
+
+                    for key, value in example_movie.items():
+                        if movie_info.get(key) != value:
+                            return wrong(
+                                f"Detailed movie endpoint seems to return incorrect value for the {key} field.")
+
+                get_movies_resp = requests.get(self.movies_url)
+                get_movies_resp.raise_for_status()
+                movies_list = get_movies_resp.json().get("movies")
+                if not movies_list:
+                    return wrong("Movie list endpoint should return list movies in json accessible by 'movies' key!")
+                for example_movie in example_movies:
+                    if not any([returned_movie["id"] == example_movie["id"] for returned_movie in movies_list]):
+                        return wrong("Movies list endpoint seems to not return all movies with ids.")
+                    if not any([returned_movie["name"] == example_movie["name"] for returned_movie in movies_list]):
+                        return wrong("Movies list endpoint seems to not return all movies with names.")
+                    if not any([returned_movie["genre"] == example_movie["genre"] for returned_movie in movies_list]):
+                        return wrong("Movies list endpoint seems to not return all movies with genres.")
+
+                return correct()
+            except Exception as e:
+                return wrong(f"Caught unexpected error: {str(e)}")
+
+        @dynamic_test
+        def check_stage_two_endpoints(self):
+            try:
+                example_humans = self.example_humans.copy()
+                for example_human in example_humans:
+                    create_human_resp = requests.post(self.humans_url, json=example_human)
+                    if create_human_resp.status_code != 200:
+                        raise MovieDatabaseAPIError(create_human_resp.json())
+
+                    human_id = create_human_resp.json().get("id")
+                    if not human_id:
+                        return wrong("Expected to get human id in the creation response!")
+                    example_human["id"] = human_id
+
+                    get_human_details_resp = requests.get(f"{self.humans_url}/{human_id}")
+                    if get_human_details_resp.status_code != 200:
+                        raise MovieDatabaseAPIError(get_human_details_resp.json())
+
+                    human_info = get_human_details_resp.json().get("human")
+                    if not human_info:
+                        return wrong("Detailed human endpoint should return human info in json accessible by 'human' key!")
+
+                    for key, value in example_human.items():
+                        if human_info.get(key) != value:
+                            return wrong(
+                                f"Detailed human endpoint seems to return incorrect value for the {key} field.")
+
+                get_humans_resp = requests.get(self.humans_url)
+                if get_humans_resp.status_code != 200:
+                    raise MovieDatabaseAPIError(get_humans_resp.json())
+
+                humans_list = get_humans_resp.json().get("humans")
+                if not humans_list:
+                    return wrong("Perons list endpoint should return list of humans in json accessible by 'humans' key!")
+                for example_human in example_humans:
+                    if not any([returned_human["id"] == example_human["id"] for returned_human in humans_list]):
+                        return wrong("humans list endpoint seems to not return all humans with ids.")
+                    if not any([returned_human["name"] == example_human["name"] for returned_human in humans_list]):
+                        return wrong("humans list endpoint seems to not return all humans with names.")
+
+                return correct()
+            except Exception as e:
+                return wrong(f"Caught unexpected error: {str(e)}")
+
+
+    if __name__ == '__main__':
+        Test().run_tests()
+  learner_created: false
+- name: test.py
+  visible: false
+  text: |
+    from test.tests import Test
+
+    if __name__ == "__main__":
+        Test().run_tests()
+  learner_created: false
+- name: tests.py
+  visible: true
+  learner_created: true
+- name: api/main.py
+  visible: true
+  text: |
+    from flask import Flask, make_response, jsonify
+    from flask_restful import Api, Resource, reqparse
+    from flask_sqlalchemy import SQLAlchemy
+    import sys
+
+
+    app = Flask(__name__)
+    api = Api(app)
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///name.db'
+    db = SQLAlchemy(app)
+
+
+    class Movie(db.Model):
+        __tablename__ = "movies"
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String, nullable=False)
+        year = db.Column(db.String(4), nullable=False)
+        genre = db.Column(db.String(80), nullable=False)
+        actors = db.relationship("HumanInMovie", backref="movies", uselist=False)
+
+
+    class Human(db.Model):
+        __tablename__ = "actors"
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(80), nullable=False)
+        year_born = db.Column(db.String(4), nullable=False)
+        movies = db.relationship("HumanInMovie", backref="actors", lazy=True)
+
+
+    class HumanInMovie(db.Model):
+        __tablename__ = "movie_actors"
+        id = db.Column(db.Integer, primary_key=True)
+        role = db.Column(db.String(80), nullable=False)
+        movie_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False, unique=True)
+        human_id = db.Column(db.Integer, db.ForeignKey("actors.id"), nullable=False)
+
+
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
+
+    parser = reqparse.RequestParser()
+
+
+    class MoviesView(Resource):
+        def post(self):
+            parser.add_argument('name', type=str, help="Movie title is not specified", required=True)
+            parser.add_argument('year', type=str, help="movie year is not specified", required=True)
+            parser.add_argument('genre', type=str, help="Movie genre is not specified", required=True)
+            args = parser.parse_args()
+            movie = Movie(name=args['name'], year=args['year'], genre=args['genre'])
+            db.session.add(movie)
+            db.session.commit()
+            response = {"id": movie.id, "name": movie.name, "year": movie.year, "genre": movie.genre}
+            return make_response(jsonify(response), 200)
+
+        def get(self):
+            movies = Movie.query.all()
+            movies_response = {}
+            movies_response["movies"] = [{"id": movie.id, "name": movie.name, "year": movie.year, "genre": movie.genre} for movie in movies]
+            return make_response(jsonify(movies_response), 200)
+
+
+    api.add_resource(MoviesView, '/movies')
+
+
+    class MoviesByIdView(Resource):
+
+        def get(self, id):
+            movie = Movie.query.filter(id==Movie.id).first()
+            movies_response = {}
+            movies_response['movie'] ={"id": movie.id, "name": movie.name, "genre": movie.genre, "year": movie.year}
+            return make_response(jsonify(movies_response), 200)
+
+
+    api.add_resource(MoviesByIdView, '/movies/<int:id>')
+
+
+    class HumansView(Resource):
+
+        def post(self):
+            parser.add_argument("name", type=str, help="Actor name is not specified", required=True)
+            parser.add_argument("year_born", type=str, help="Year of actor's birth is not specified", required=True)
+            args = parser.parse_args()
+            actor = Human(name=args["name"], year_born=args["year_born"])
+            db.session.add(actor)
+            db.session.commit()
+            response = {"name": actor.name, "year_born": actor.year_born}
+            return make_response(response, 200)
+
+        def get(self):
+            actors = Human.query.all()
+            humans_response = {}
+            humans_response["humans"] = [{"id": actor.id, "name": actor.name} for actor in actors]
+            return make_response(humans_response, 200)
+
+
+    api.add_resource(HumansView, '/humans')
+
+
+    class HumansByIdView(Resource):
+
+        def get(self, id):
+            actor = Human.query.filter(id==Human.id).first()
+            actor_response = {}
+            actor_response["human"] = {"id": actor.id, "name": actor.name, "year_born": actor.year_born}
+            return make_response(actor_response, 200)
+
+
+    api.add_resource(HumansByIdView, "/humans/<int:id>")
+
+
+
+    @app.errorhandler(400)
+    def bad_request(e):
+        print(e.data)
+        return make_response(jsonify({"message": e.data['message']}), 400)
+
+    if __name__ == '__main__':
+        if len(sys.argv) > 1:
+            arg_host, arg_port = sys.argv[1].split(':')
+            app.run(host=arg_host, port=arg_port)
+        else:
+            app.run(host='0.0.0.0', port=3333)
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/26859#comment
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Thu, 06 Apr 2023 12:36:57 UTC"
+record: 2

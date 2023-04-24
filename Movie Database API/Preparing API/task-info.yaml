@@ -1,0 +1,93 @@
+type: edu
+files:
+- name: test/__init__.py
+  visible: false
+  learner_created: false
+- name: test/tests.py
+  visible: false
+  text: |
+    import requests
+    from hstest import FlaskTest, wrong, correct, dynamic_test
+
+
+    class Test(FlaskTest):
+        source = "api.main"
+        use_database = True
+
+        @property
+        def movies_url(self):
+            return self.get_url("/movies")
+
+        @property
+        def example_movies(self):
+            return [
+                {"name": "Biba",
+                 "year": "1999",
+                 "genre": "comedy"},
+                {"name": "Boba",
+                 "year": "2099",
+                 "genre": "horror"}
+            ]
+
+        @dynamic_test
+        def check_stage_one_endpoints(self):
+            try:
+                example_movies = self.example_movies.copy()
+                for example_movie in example_movies:
+                    create_movie_resp = requests.post(self.movies_url, json=example_movie)
+                    create_movie_resp.raise_for_status()
+                    movie_id = create_movie_resp.json().get("id")
+                    if not movie_id:
+                        return wrong("Expected to get movie id in the creation response!")
+                    example_movie["id"] = movie_id
+
+                    get_movie_details_resp = requests.get(f"{self.movies_url}/{movie_id}")
+                    get_movie_details_resp.raise_for_status()
+                    movie_info = get_movie_details_resp.json().get("movie")
+                    if not movie_info:
+                        return wrong("Detailed movie endpoint should return movie info in json accessible by 'movie' key!")
+
+                    for key, value in example_movie.items():
+                        if movie_info.get(key) != value:
+                            return wrong(
+                                f"Detailed movie endpoint seems to return incorrect value for the {key} field.")
+
+                get_movies_resp = requests.get(self.movies_url)
+                get_movies_resp.raise_for_status()
+                movies_list = get_movies_resp.json().get("movies")
+                if not movies_list:
+                    return wrong("Movie list endpoint should return list movies in json accessible by 'movies' key!")
+                for example_movie in example_movies:
+                    if not any([returned_movie["id"] == example_movie["id"] for returned_movie in movies_list]):
+                        return wrong("Movies list endpoint seems to not return all movies with ids.")
+                    if not any([returned_movie["name"] == example_movie["name"] for returned_movie in movies_list]):
+                        return wrong("Movies list endpoint seems to not return all movies with names.")
+                    if not any([returned_movie["genre"] == example_movie["genre"] for returned_movie in movies_list]):
+                        return wrong("Movies list endpoint seems to not return all movies with genres.")
+
+                return correct()
+            except Exception as e:
+                return wrong(f"Caught unexpected error: {str(e)}")
+
+
+    if __name__ == '__main__':
+        Test().run_tests()
+  learner_created: false
+- name: tests.py
+  visible: false
+  text: |-
+    from test.tests import Test
+
+    if __name__ == "__main__":
+        Test().run_tests()
+  learner_created: false
+- name: api/main.py
+  visible: true
+  text: |2
+
+    def main():
+        print("Hello world")
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/26858#comment
+status: Solved
+record: 1

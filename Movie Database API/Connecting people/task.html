@@ -1,0 +1,71 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>Let’s connect movies with people. Movies don't exist without actors, directors, and vice versa.</p>
+<h5 id="objectives">Objectives</h5>
+<p>Create <code class="language-bash">POST /movies/&lt;id&gt;/humans</code> and <code class="language-bash">POST /humans/&lt;id&gt;/movies</code>. Both of them should give user an ability to connect professionals with movies and create new <code class="language-bash">HumanInMovie</code> entries. In case if an <code class="language-bash">id</code> was provided, whether it's an individual or a movie, we should use already existing entry saved by this ID to create a relationship. Otherwise, create a new entry and then add it to the <code class="language-bash">HumanInMovie</code> table. Don’t forget to update <code class="language-bash">GET</code> endpoints for both tables with detailed information, so that the lists of related people/movies are displayed as well.</p>
+<p>This all might sound a bit overwhelming, so let's jump straight into examples to clarify it.</p>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1: </strong><em>creating a new movie/person relation </em></p>
+<pre><code class="language-bash">http POST http://127.0.0.1:8000/movies/1/humans</code></pre>
+<p><em>example:</em></p>
+<pre><code class="language-python">{"name": "Terry Gilliam",
+"year_born": 1940,
+"roles": ["actor"]}</code></pre>
+<p><em>A person might have several roles in a movie, directors playing cameo is a good example. So, each role requires an entry in <code class="language-bash">PeopleInMovie</code> table entry. </em></p>
+<p><strong>Example 2: </strong><em>creating new people/movie relations</em></p>
+<pre><code class="language-bash">http POST http://127.0.0.1:8000/humans/1/movies
+</code></pre>
+<p><em>example:</em></p>
+<pre><code class="language-python">{"name": "Monthy Python's Flying Circus",
+"year": 1969,
+"genre": "comedy",
+"roles": ["actor"]}</code></pre>
+<p><strong>Example 3: </strong><em>getting detailed information about a person</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/humans/1</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-python">{"human":
+     {"id": 1,
+      "name": "Graham Chapman",
+      "year_born": "1941",
+      "movies": [
+           {"name": "Monthy Python's Flying Circus",
+            "role": "actor"},
+           {"name": "Monthy Python and the Holy Grail",
+            "role": "actor"},
+            {"name": "Monthy Python and the Holy Grail",
+            "role": "director"}]
+      }</code></pre>
+<p><strong>Example 4: </strong><em>getting detailed information about a movie</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/movies/1</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-python">{"movie":
+     {"id": 1,
+      "name": "Monthy Python's Flying Circus",
+      "year": "1969",
+      "humans": [
+           {"name": "Graham Chapman",
+            "role": "actor"},
+           {"name": "Terry Gilliam",
+            "role": "actor"}]
+      }</code></pre>
+<p><strong>Example 5: </strong><em>creating a movie/person relationship with an existing person. The person with the ID 1 already exists in the database.</em></p>
+<pre><code class="language-bash">http POST http://127.0.0.1:8000/movies/1/humans
+</code></pre>
+<p><em>example:</em></p>
+<pre><code class="language-python">{"id": 1,
+"roles": ["director"]}</code></pre>
+<p><em>If the person with id = 1 is stored in the database with, for example, "Test name", it should appear when calling movie details for the next time:</em></p>
+<pre><code class="language-python">{"movie":
+     {"id": 1,
+      "name": "Monthy Python's Flying Circus",
+      "year": "1969",
+      "humans": [
+           {"name": "Graham Chapman",
+            "role": "actor"},
+           {"name": "Terry Gilliam",
+            "role": "actor"},
+           {"name": "Test name",
+            "role": "director"}]
+      }</code></pre>
+
+</div>

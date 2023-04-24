@@ -1,0 +1,43 @@
+<div class="step-text">
+<h5 id="description">Description</h5>
+<p>Let's dive right into the project creation! When building a new system from scratch, first, you need to determine what objects (instances) you're going to operate with. Then, create the project base — in our case, the basic Flask application with a few database models and a few endpoints to access these models.</p>
+<p>While working on this Movie Database API, consider it as a very simplified version of IMDB. You'll only have movies and people that participate in the movie creation process stored and accessed through API. </p>
+<p>So, before jumping to IDE, think about instances you'll have in your application, which attributes they will have and how will they connect with each other. You won't need to implement them all right away, but it's worth seeing the whole picture before committing to it.</p>
+<h5 id="objectives">Objectives</h5>
+<p>Now, when you have a general idea of the project, let's start the implementation.</p>
+<p>In this stage, you need to create a basic Flask RESTful API using the <code class="language-bash">flask-restful</code> library. Connect an SQLite database. Then, create the <code class="language-bash">Movie</code> table mapping with SQLAlchemy. You can think of many optional attributes this mapping may have, but ensure it has the <code class="language-bash">id</code>, <code class="language-bash">name</code>, <code class="language-bash">year</code>, and <code class="language-bash">genre</code> fields as required.</p>
+<p>After that, create <code class="language-bash">GET</code> and <code class="language-bash">POST</code> endpoints for movie at <em>/movies</em> and <em>GET/movies/&lt;id&gt;</em>.</p>
+<ul>
+<li>The <code class="language-bash">POST /movies</code> endpoint should take a JSON body containing at least the required fields as the input, and then create a new <code class="language-bash">Movie</code> database entry using this data;</li>
+<li>The <code class="language-bash">GET /movies</code> endpoint should return a list of all the movies stored in the database, accessible by the <code class="language-bash">movies</code> key, containing only movie's <code class="language-bash">id</code>,  <code class="language-bash">name</code>, and <code class="language-bash"><span style="color: #000000;">genre</span></code>.</li>
+<li>Finally, the <code class="language-bash">GET /movies/&lt;id&gt;</code> should return detailed information about the movie, i.e., the remaining fields, accessible by the <code class="language-bash">movie</code> key.</li>
+</ul>
+<p></p><div class="alert alert-warning">Add the <code class="language-bash">drop_all</code> method and call it on start before checking the tests; it would keep the tests clean. This is applicable to all stages.</div>
+<h5 id="examples">Examples</h5>
+<p><strong>Example 1: </strong><em>adding a new movie</em></p>
+<pre><code class="language-bash">http POST http://127.0.0.1:8000/movies
+</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-bash">{"name": "Hypermovie",
+"year": 2022,
+"genre": "sci-fi"}</code></pre>
+<p><strong>Example 2: </strong><em>a list of movies</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/movies
+</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-bash">{"movies": [
+     {"id": 1,
+      "name": "Hypermovie",
+      "genre": "sci-fi"}
+]}</code></pre>
+<p><strong>Example 3: </strong><em>detailed information about a movie</em></p>
+<pre><code class="language-bash">http GET http://127.0.0.1:8000/movies/1</code></pre>
+<p><em>example response:</em></p>
+<pre><code class="language-bash">{"movie":
+     {"id": 1,
+      "name": "Hypermovie",
+      "year": 2022,
+      "genre": "sci-fi"}
+}</code></pre>
+
+</div>
